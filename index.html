@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReadTogether — Birlikte Oku</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #0f0e0c;
+    --bg2: #1a1916;
+    --bg3: #242320;
+    --surface: #2d2c28;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.15);
+    --text: #f0ede6;
+    --text2: #a09b90;
+    --text3: #6b6760;
+    --accent: #c9a96e;
+    --accent2: #e8c98a;
+    --accentbg: rgba(201,169,110,0.12);
+    --danger: #e07070;
+    --green: #7ec98a;
+    --blue: #7ab3d4;
+    --radius: 10px;
+    --radius-lg: 16px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ---- LOBBY ---- */
+  #lobby {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: radial-gradient(ellipse at 50% 0%, rgba(201,169,110,0.06) 0%, transparent 70%);
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    font-weight: 400;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    margin-bottom: 0.3rem;
+  }
+
+  .logo span { color: var(--accent); }
+
+  .tagline {
+    color: var(--text2);
+    font-size: 0.95rem;
+    font-weight: 300;
+    margin-bottom: 3.5rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+  }
+
+  .lobby-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 700px;
+  }
+
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+  }
+
+  .card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 500;
+    margin-bottom: 0.4rem;
+  }
+
+  .card p {
+    font-size: 0.82rem;
+    color: var(--text2);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+
+  .inp {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.7rem 1rem;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    outline: none;
+    margin-bottom: 0.75rem;
+    transition: border-color 0.2s;
+  }
+
+  .inp:focus { border-color: var(--accent); }
+  .inp::placeholder { color: var(--text3); }
+
+  .btn {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    transition: all 0.18s;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #1a1612;
+  }
+
+  .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border2);
+  }
+
+  .btn-secondary:hover { background: var(--bg3); }
+
+  /* ---- ROOM ---- */
+  #room {
+    display: none;
+    height: 100vh;
+    width: 100vw;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .topbar {
+    height: 48px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    gap: 0.75rem;
+    flex-shrink: 0;
+    z-index: 100;
+  }
+
+  .topbar-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    color: var(--accent);
+    font-weight: 500;
+    margin-right: 0.5rem;
+  }
+
+  .room-id-badge {
+    font-size: 0.72rem;
+    background: var(--accentbg);
+    border: 1px solid rgba(201,169,110,0.25);
+    color: var(--accent);
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+
+  .room-id-badge:hover { background: rgba(201,169,110,0.2); }
+
+  .sep { flex: 1; }
+
+  .page-ctrl {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .page-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+  }
+
+  .page-btn:hover { background: var(--bg3); }
+  .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .page-info {
+    font-size: 0.8rem;
+    color: var(--text2);
+    min-width: 70px;
+    text-align: center;
+  }
+
+  .vote-btn {
+    height: 30px;
+    padding: 0 0.8rem;
+    border-radius: 7px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .vote-btn:hover { background: var(--accentbg); border-color: var(--accent); color: var(--accent); }
+  .vote-btn.voted { background: var(--accentbg); border-color: var(--accent); color: var(--accent); }
+  .vote-count { font-size: 0.72rem; opacity: 0.8; }
+
+  .icon-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .icon-btn:hover { background: var(--bg3); color: var(--text); }
+  .icon-btn.active { background: var(--accentbg); border-color: var(--accent); color: var(--accent); }
+  .icon-btn.danger.active { background: rgba(224,112,112,0.15); border-color: var(--danger); color: var(--danger); }
+
+  /* ---- MAIN LAYOUT ---- */
+  .main-area {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* ---- PDF VIEWER ---- */
+  #pdf-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--bg);
+    overflow: hidden;
+    position: relative;
+  }
+
+  #pdf-drop-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text2);
+    cursor: pointer;
+    user-select: none;
+    gap: 1rem;
+    border: 2px dashed var(--border2);
+    margin: 2rem;
+    border-radius: var(--radius-lg);
+    transition: all 0.2s;
+    padding: 2rem;
+    text-align: center;
+  }
+
+  #pdf-drop-zone:hover, #pdf-drop-zone.drag-over {
+    border-color: var(--accent);
+    background: var(--accentbg);
+    color: var(--accent);
+  }
+
+  .drop-icon { font-size: 3rem; opacity: 0.5; }
+  .drop-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 400; }
+  .drop-sub { font-size: 0.8rem; opacity: 0.6; }
+
+  #pdf-scroll-container {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: auto;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    position: relative;
+    padding: 1.5rem 1rem;
+  }
+
+  #pdf-scroll-container::-webkit-scrollbar { width: 6px; }
+  #pdf-scroll-container::-webkit-scrollbar-track { background: transparent; }
+  #pdf-scroll-container::-webkit-scrollbar-thumb { background: var(--surface); border-radius: 3px; }
+
+  #pdf-canvas-wrap {
+    position: relative;
+    display: inline-block;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: crosshair;
+  }
+
+  #pdf-canvas { display: block; }
+
+  #cursor-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .remote-cursor {
+    position: absolute;
+    pointer-events: none;
+    transform: translate(-2px, -2px);
+    z-index: 20;
+    transition: left 0.05s, top 0.05s;
+  }
+
+  .cursor-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid white;
+  }
+
+  .cursor-label {
+    font-size: 0.65rem;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--surface);
+    color: var(--text);
+    padding: 1px 5px;
+    border-radius: 4px;
+    white-space: nowrap;
+    margin-top: 2px;
+    border: 1px solid var(--border2);
+  }
+
+  /* zoom controls */
+  .zoom-ctrl {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.25rem 0.5rem;
+  }
+
+  .zoom-val {
+    font-size: 0.75rem;
+    color: var(--text2);
+    min-width: 38px;
+    text-align: center;
+  }
+
+  /* ---- SIDEBAR ---- */
+  #sidebar {
+    width: 300px;
+    background: var(--bg2);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    transition: width 0.25s;
+  }
+
+  #sidebar.collapsed { width: 0; overflow: hidden; border: none; }
+
+  .sidebar-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .stab {
+    flex: 1;
+    padding: 0.65rem 0;
+    background: transparent;
+    border: none;
+    color: var(--text3);
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+    border-bottom: 2px solid transparent;
+  }
+
+  .stab:hover { color: var(--text2); }
+  .stab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .tab-panel { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+  .tab-panel.active { display: flex; }
+
+  /* Chat */
+  #chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  #chat-messages::-webkit-scrollbar { width: 4px; }
+  #chat-messages::-webkit-scrollbar-thumb { background: var(--surface); border-radius: 2px; }
+
+  .msg {
+    padding: 0.45rem 0.65rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    background: var(--bg3);
+    max-width: 95%;
+    word-break: break-word;
+  }
+
+  .msg.me {
+    background: var(--accentbg);
+    border: 1px solid rgba(201,169,110,0.2);
+    align-self: flex-end;
+  }
+
+  .msg .msg-author {
+    font-size: 0.68rem;
+    font-weight: 500;
+    margin-bottom: 0.15rem;
+    opacity: 0.7;
+  }
+
+  .msg.system {
+    background: transparent;
+    color: var(--text3);
+    font-size: 0.72rem;
+    font-style: italic;
+    align-self: center;
+    text-align: center;
+  }
+
+  .chat-input-row {
+    padding: 0.65rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 0.4rem;
+    flex-shrink: 0;
+  }
+
+  .chat-input-row .inp {
+    flex: 1;
+    margin: 0;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.82rem;
+  }
+
+  .send-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius);
+    border: none;
+    background: var(--accent);
+    color: #1a1612;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+
+  .send-btn:hover { background: var(--accent2); }
+
+  /* Users panel */
+  #users-list {
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .user-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.55rem 0.65rem;
+    border-radius: var(--radius);
+    background: var(--bg3);
+    font-size: 0.85rem;
+  }
+
+  .user-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .user-name { flex: 1; font-size: 0.83rem; }
+
+  .user-badge {
+    font-size: 0.6rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    background: var(--accentbg);
+    color: var(--accent);
+    border: 1px solid rgba(201,169,110,0.25);
+  }
+
+  .mic-icon { font-size: 0.75rem; color: var(--green); }
+
+  /* Voice panel */
+  #voice-panel {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: center;
+    flex: 1;
+  }
+
+  .voice-status {
+    font-size: 0.82rem;
+    color: var(--text2);
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  .big-mic-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid var(--border2);
+    background: var(--bg3);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.18s;
+  }
+
+  .big-mic-btn:hover { background: var(--surface); }
+  .big-mic-btn.muted { background: rgba(224,112,112,0.15); border-color: var(--danger); color: var(--danger); }
+  .big-mic-btn.active { background: rgba(126,201,138,0.15); border-color: var(--green); color: var(--green); animation: pulse 2s infinite; }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(126,201,138,0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(126,201,138,0); }
+  }
+
+  /* Toast */
+  #toast-area {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+    pointer-events: none;
+  }
+
+  .toast {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 0.55rem 1.1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    animation: toast-in 0.25s ease, toast-out 0.3s ease 2.5s forwards;
+  }
+
+  @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes toast-out { from { opacity: 1; } to { opacity: 0; } }
+
+  /* Vote progress */
+  .vote-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.3s;
+    pointer-events: none;
+  }
+
+  /* Connection dots */
+  .conn-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px rgba(126,201,138,0.6);
+    flex-shrink: 0;
+  }
+
+  .conn-dot.disconnected { background: var(--danger); box-shadow: none; }
+
+  /* Mobile */
+  @media (max-width: 600px) {
+    .lobby-cards { grid-template-columns: 1fr; }
+    #sidebar { width: 260px; position: absolute; right: 0; top: 48px; height: calc(100vh - 48px); z-index: 50; }
+    #sidebar.collapsed { width: 0; }
+  }
+
+  /* Admin highlight */
+  .admin-only { position: relative; }
+  .admin-only::after {
+    content: 'Admin';
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.6rem;
+    background: var(--accentbg);
+    color: var(--accent);
+    padding: 1px 5px;
+    border-radius: 4px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .admin-only:hover::after { opacity: 1; }
+
+  .hidden { display: none !important; }
+
+  /* file input */
+  #file-input { display: none; }
+
+  /* pdf zoom container */
+  #pdf-wrapper {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .pdf-toolbar {
+    height: 40px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 1rem;
+    width: 100%;
+    flex-shrink: 0;
+  }
+
+  .pdf-toolbar span { font-size: 0.78rem; color: var(--text2); }
+
+  select.inp {
+    padding: 0.25rem 0.5rem;
+    width: auto;
+    margin: 0;
+    font-size: 0.78rem;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<!-- LOBBY -->
+<div id="lobby">
+  <div class="logo">Read<span>Together</span></div>
+  <div class="tagline">Arkadaşlarınla birlikte oku</div>
+  <div class="lobby-cards">
+    <div class="card">
+      <h2>Oda Oluştur</h2>
+      <p>Yeni bir okuma odası aç, PDF yükle ve arkadaşlarını davet et.</p>
+      <input class="inp" id="create-name" placeholder="Kullanıcı adın" maxlength="24">
+      <button class="btn btn-primary" onclick="createRoom()">Oda Oluştur</button>
+    </div>
+    <div class="card">
+      <h2>Odaya Katıl</h2>
+      <p>Arkadaşının gönderdiği oda kodunu girerek katıl.</p>
+      <input class="inp" id="join-name" placeholder="Kullanıcı adın" maxlength="24">
+      <input class="inp" id="join-code" placeholder="Oda kodu (örn: ABC123)" maxlength="10" style="text-transform:uppercase">
+      <button class="btn btn-secondary" onclick="joinRoom()">Odaya Katıl</button>
+    </div>
+  </div>
+</div>
+
+<!-- ROOM -->
+<div id="room" style="display:none;flex-direction:column;">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <span class="topbar-logo">RT</span>
+    <span class="room-id-badge" id="room-badge" onclick="copyRoomId()" title="Kopyala">— —</span>
+    <div class="conn-dot" id="conn-dot"></div>
+    <span style="font-size:0.72rem;color:var(--text3)" id="peer-count">0 kişi</span>
+
+    <div class="sep"></div>
+
+    <!-- Vote to turn page -->
+    <button class="vote-btn" id="vote-btn" onclick="voteNextPage()" style="position:relative;overflow:hidden;">
+      <span id="vote-icon">📖</span>
+      <span>Sayfayı çevir</span>
+      <span class="vote-count" id="vote-status"></span>
+      <div class="vote-progress" id="vote-progress" style="width:0%"></div>
+    </button>
+
+    <div class="sep"></div>
+
+    <!-- Page controls (admin only shown) -->
+    <div class="page-ctrl" id="admin-page-ctrl" style="display:none">
+      <button class="page-btn admin-only" id="prev-btn" onclick="adminGo(-1)">‹</button>
+      <span class="page-info" id="page-display">— / —</span>
+      <button class="page-btn admin-only" id="next-btn" onclick="adminGo(1)">›</button>
+    </div>
+    <span class="page-info" id="page-display-guest" style="display:none;">— / —</span>
+
+    <!-- Zoom -->
+    <div class="zoom-ctrl">
+      <button class="page-btn" onclick="zoom(-0.15)" title="Uzaklaş">−</button>
+      <span class="zoom-val" id="zoom-val">100%</span>
+      <button class="page-btn" onclick="zoom(0.15)" title="Yaklaş">+</button>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- Upload (admin) -->
+    <button class="icon-btn admin-only" id="upload-btn" onclick="document.getElementById('file-input').click()" title="PDF Yükle">📄</button>
+    <input type="file" id="file-input" accept=".pdf" onchange="handleFileSelect(event)">
+
+    <!-- Mic -->
+    <button class="icon-btn" id="mic-btn" onclick="toggleMic()" title="Mikrofon">🎤</button>
+
+    <!-- Sidebar toggle -->
+    <button class="icon-btn active" id="sidebar-toggle" onclick="toggleSidebar()" title="Panel">◧</button>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-area">
+
+    <!-- PDF AREA -->
+    <div id="pdf-area">
+
+      <!-- Drop zone -->
+      <div id="pdf-drop-zone" onclick="document.getElementById('file-input').click()"
+           ondragover="event.preventDefault();this.classList.add('drag-over')"
+           ondragleave="this.classList.remove('drag-over')"
+           ondrop="handleDrop(event)">
+        <div class="drop-icon">📚</div>
+        <div class="drop-title">PDF Yükle</div>
+        <div class="drop-sub">Sürükle bırak veya tıkla · PDF, Çizgi Roman, Kitap</div>
+        <div class="drop-sub" style="margin-top:0.5rem;color:var(--text3);font-size:0.7rem">Yalnızca oda admini yükleyebilir</div>
+      </div>
+
+      <!-- PDF wrapper (shown when PDF loaded) -->
+      <div id="pdf-wrapper">
+        <div class="pdf-toolbar">
+          <span id="book-title" style="font-family:'Playfair Display',serif;font-size:0.9rem;color:var(--text)">—</span>
+          <div style="flex:1"></div>
+          <span>Görünüm:</span>
+          <select class="inp" id="fit-mode" onchange="renderPage()">
+            <option value="width">Genişliğe Sığdır</option>
+            <option value="height">Yüksekliğe Sığdır</option>
+            <option value="free">Serbest</option>
+          </select>
+        </div>
+        <div id="pdf-scroll-container">
+          <div id="pdf-canvas-wrap">
+            <canvas id="pdf-canvas"></canvas>
+            <div id="cursor-overlay"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SIDEBAR -->
+    <div id="sidebar">
+      <div class="sidebar-tabs">
+        <button class="stab active" onclick="switchTab('chat')">💬 Sohbet</button>
+        <button class="stab" onclick="switchTab('users')">👥 Üyeler</button>
+        <button class="stab" onclick="switchTab('voice')">🔊 Ses</button>
+      </div>
+
+      <!-- CHAT -->
+      <div class="tab-panel active" id="tab-chat">
+        <div id="chat-messages"></div>
+        <div class="chat-input-row">
+          <input class="inp" id="chat-input" placeholder="Mesaj yaz..." maxlength="300"
+                 onkeydown="if(event.key==='Enter')sendChatMsg()">
+          <button class="send-btn" onclick="sendChatMsg()">➤</button>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div class="tab-panel" id="tab-users">
+        <div id="users-list"></div>
+      </div>
+
+      <!-- VOICE -->
+      <div class="tab-panel" id="tab-voice">
+        <div id="voice-panel">
+          <div class="voice-status" id="voice-status">Sesli konuşmaya katılmak için mikrofon butonuna bas.</div>
+          <button class="big-mic-btn" id="big-mic-btn" onclick="toggleMic()">🎤</button>
+          <div class="voice-status" style="font-size:0.72rem;color:var(--text3)">Ses, WebRTC ile şifreli olarak iletilir.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast-area"></div>
+
+<!-- PeerJS -->
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<!-- PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<script>
+// ======================================================
+// STATE
+// ======================================================
+const pdfjsLib = window['pdfjs-dist/build/pdf'];
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+let myName = '';
+let roomId = '';
+let isAdmin = false;
+let peer = null;
+let connections = []; // DataChannel connections to other peers
+let audioConnections = {}; // peerId -> MediaConnection
+let pdfDoc = null;
+let currentPage = 1;
+let totalPages = 0;
+let scale = 1.0;
+let renderTask = null;
+let micStream = null;
+let isMicOn = false;
+let isMuted = false;
+let sidebarOpen = true;
+let votes = new Set();
+let myVoted = false;
+let pdfData = null; // ArrayBuffer for sharing
+let pdfShared = false;
+let pendingChunks = {};
+let currentRenderPage = 0;
+
+const COLORS = ['#e8a87c','#7ab3d4','#a8d8a8','#e07eaa','#b8a0d8','#7ecec4','#e8c88a'];
+
+function myColor() {
+  return COLORS[Math.abs(hashStr(myName)) % COLORS.length];
+}
+
+function hashStr(s) {
+  let h = 0;
+  for (let c of s) h = (h * 31 + c.charCodeAt(0)) | 0;
+  return h;
+}
+
+function peerColor(name) {
+  return COLORS[Math.abs(hashStr(name)) % COLORS.length];
+}
+
+// ======================================================
+// LOBBY
+// ======================================================
+function generateRoomId() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({length: 6}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
+function createRoom() {
+  const name = document.getElementById('create-name').value.trim();
+  if (!name) { toast('Kullanıcı adı gir'); return; }
+  myName = name;
+  roomId = generateRoomId();
+  isAdmin = true;
+  initPeer(roomId + '-admin');
+}
+
+function joinRoom() {
+  const name = document.getElementById('join-name').value.trim();
+  const code = document.getElementById('join-code').value.trim().toUpperCase();
+  if (!name) { toast('Kullanıcı adı gir'); return; }
+  if (code.length < 4) { toast('Oda kodu gir'); return; }
+  myName = name;
+  roomId = code;
+  isAdmin = false;
+  initPeer(null);
+}
+
+// ======================================================
+// PEER SETUP
+// ======================================================
+function initPeer(id) {
+  // STUN sunucularını ekliyoruz
+  const opts = {
+    debug: 2, // Konsolda hataları görmek için 2 yapalım
+    config: {
+      'iceServers': [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' }
+      ]
+    }
+  };
+  
+  peer = id ? new Peer(id, opts) : new Peer(opts);
+
+  peer.on('open', (pid) => {
+    console.log('Peer open:', pid);
+    showRoom();
+    if (!isAdmin) {
+      setTimeout(() => connectToAdmin(), 300);
+    } else {
+      updatePeerCount();
+    }
+  });
+
+  peer.on('connection', (conn) => {
+    handleNewConn(conn);
+  });
+
+  peer.on('call', (call) => {
+    if (micStream) {
+      call.answer(micStream);
+    } else {
+      call.answer();
+    }
+    setupAudioCall(call);
+  });
+
+  peer.on('error', (e) => {
+    console.error('Peer error', e);
+    if (e.type === 'peer-unavailable') {
+      toast('Oda bulunamadı. Kod doğru mu?');
+    } else {
+      toast('Bağlantı hatası: ' + e.type);
+    }
+    setConnected(false);
+  });
+}
+
+function connectToAdmin() {
+  setConnected(false);
+  const adminId = roomId + '-admin';
+  const conn = peer.connect(adminId, { reliable: true, serialization: 'json' });
+  conn.on('open', () => {
+    handleNewConn(conn);
+    send(conn, { type: 'hello', name: myName, color: myColor() });
+  });
+  conn.on('error', (e) => { toast('Admin bağlantısı başarısız'); });
+}
+
+function handleNewConn(conn) {
+  connections.push(conn);
+  setConnected(true);
+
+  conn.on('data', (data) => handleData(data, conn));
+
+  conn.on('close', () => {
+    connections = connections.filter(c => c !== conn);
+    const uname = conn._meta?.name;
+    if (uname) {
+      sysMsg(uname + ' odadan ayrıldı');
+      removeUserFromList(uname);
+      removeCursor(uname);
+    }
+    updatePeerCount();
+  });
+
+  conn.on('error', () => {
+    connections = connections.filter(c => c !== conn);
+    updatePeerCount();
+  });
+}
+
+function send(conn, msg) {
+  try { conn.send(msg); } catch(e) {}
+}
+
+function broadcast(msg, except) {
+  connections.forEach(c => { if (c !== except) send(c, msg); });
+}
+
+// ======================================================
+// DATA PROTOCOL
+// ======================================================
+function handleData(data, fromConn) {
+  switch(data.type) {
+
+    case 'hello':
+      fromConn._meta = { name: data.name, color: data.color };
+      addUserToList(data.name, data.color, false);
+      sysMsg(data.name + ' odaya katıldı');
+      updatePeerCount();
+      if (isAdmin) {
+        // Send current state to newcomer
+        send(fromConn, { type: 'state', page: currentPage, total: totalPages, bookTitle: document.getElementById('book-title').textContent });
+        // Broadcast to others that someone joined
+        broadcast({ type: 'user_join', name: data.name, color: data.color }, fromConn);
+        // If we have PDF, start sending it
+        if (pdfData) sendPdfTo(fromConn);
+      }
+      break;
+
+    case 'user_join':
+      addUserToList(data.name, data.color, false);
+      sysMsg(data.name + ' odaya katıldı');
+      updatePeerCount();
+      break;
+
+    case 'state':
+      if (!isAdmin) {
+        totalPages = data.total;
+        currentPage = data.page;
+        updatePageDisplay();
+        if (data.bookTitle && data.bookTitle !== '—') {
+          document.getElementById('book-title').textContent = data.bookTitle;
+        }
+      }
+      break;
+
+    case 'page_change':
+      if (!isAdmin) {
+        currentPage = data.page;
+        totalPages = data.total;
+        updatePageDisplay();
+        if (pdfDoc) renderPage();
+        toast(`Sayfa: ${data.page} / ${data.total}`);
+      } else {
+        // Admin relays to all
+        broadcast(data, fromConn);
+      }
+      break;
+
+    case 'chat':
+      appendChat(data.name, data.color || peerColor(data.name), data.text, false);
+      broadcast(data, fromConn);
+      break;
+
+    case 'cursor':
+      updateRemoteCursor(data.name, data.color, data.x, data.y);
+      if (isAdmin) broadcast(data, fromConn);
+      break;
+
+    case 'vote':
+      if (isAdmin) {
+        votes.add(data.name);
+        updateVoteUI();
+        broadcast(data, fromConn);
+        const needed = Math.ceil((connections.length + 1) / 2);
+        if (votes.size >= needed && totalPages > 0 && currentPage < totalPages) {
+          votes.clear();
+          myVoted = false;
+          updateVoteUI();
+          adminGo(1);
+        }
+      } else {
+        votes.add(data.name);
+        updateVoteUI();
+      }
+      break;
+
+    case 'vote_reset':
+      votes.clear();
+      myVoted = false;
+      updateVoteUI();
+      break;
+
+    case 'pdf_chunk':
+      if (!isAdmin) receivePdfChunk(data);
+      else broadcast(data, fromConn);
+      break;
+
+    case 'pdf_done':
+      if (!isAdmin) finalizePdf(data);
+      else broadcast(data, fromConn);
+      break;
+
+    case 'mic_state':
+      updateUserMic(data.name, data.active);
+      if (isAdmin) broadcast(data, fromConn);
+      break;
+  }
+}
+
+// ======================================================
+// PDF SEND/RECEIVE
+// ======================================================
+const CHUNK_SIZE = 16000; // bytes per chunk (JSON safe)
+
+// Fonksiyonu async yapıyoruz
+async function sendPdfTo(conn) {
+  if (!pdfData) return;
+  const arr = new Uint8Array(pdfData);
+  const total = Math.ceil(arr.length / CHUNK_SIZE);
+  const title = document.getElementById('book-title').textContent;
+  
+  for (let i = 0; i < total; i++) {
+    const chunk = arr.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+    const b64 = btoa(String.fromCharCode(...chunk));
+    send(conn, { type: 'pdf_chunk', index: i, total, data: b64 });
+    
+    // Her 10 parçada bir veri kanalının nefes alması için 15 milisaniye bekle
+    if (i % 10 === 0) {
+        await new Promise(r => setTimeout(r, 15));
+    }
+  }
+  send(conn, { type: 'pdf_done', title, page: currentPage, totalPages });
+}
+
+function broadcastPdf() {
+  connections.forEach(c => sendPdfTo(c));
+}
+
+function receivePdfChunk(data) {
+  if (!pendingChunks._total) {
+    pendingChunks = { _total: data.total, _received: 0 };
+  }
+  pendingChunks[data.index] = data.data;
+  pendingChunks._received++;
+  const pct = Math.round((pendingChunks._received / pendingChunks._total) * 100);
+  toast(`PDF yükleniyor... ${pct}%`);
+}
+
+function finalizePdf(data) {
+  const chunks = [];
+  for (let i = 0; i < pendingChunks._total; i++) {
+    const b64 = pendingChunks[i];
+    const bin = atob(b64);
+    const arr = new Uint8Array(bin.length);
+    for (let j = 0; j < bin.length; j++) arr[j] = bin.charCodeAt(j);
+    chunks.push(arr);
+  }
+  const merged = new Uint8Array(chunks.reduce((a, c) => a + c.length, 0));
+  let off = 0;
+  chunks.forEach(c => { merged.set(c, off); off += c.length; });
+  pendingChunks = {};
+  loadPdfFromBuffer(merged.buffer, data.title, data.page);
+}
+
+// ======================================================
+// PDF LOAD & RENDER
+// ======================================================
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('pdf-drop-zone').classList.remove('drag-over');
+  if (!isAdmin) { toast('Sadece admin PDF yükleyebilir'); return; }
+  const file = e.dataTransfer.files[0];
+  if (file && file.type === 'application/pdf') loadPdfFile(file);
+}
+
+function handleFileSelect(e) {
+  if (!isAdmin) { toast('Sadece admin PDF yükleyebilir'); return; }
+  const file = e.target.files[0];
+  if (file) loadPdfFile(file);
+  e.target.value = '';
+}
+
+function loadPdfFile(file) {
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    pdfData = ev.target.result;
+    const title = file.name.replace(/\.pdf$/i, '');
+    loadPdfFromBuffer(pdfData, title, 1);
+    if (connections.length > 0) {
+      toast('PDF diğer kullanıcılara gönderiliyor...');
+      setTimeout(broadcastPdf, 200);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function loadPdfFromBuffer(buffer, title, startPage) {
+  const arr = new Uint8Array(buffer);
+  pdfjsLib.getDocument({ data: arr }).promise.then(doc => {
+    pdfDoc = doc;
+    totalPages = doc.numPages;
+    currentPage = startPage || 1;
+    document.getElementById('pdf-drop-zone').style.display = 'none';
+    const wrapper = document.getElementById('pdf-wrapper');
+    wrapper.style.display = 'flex';
+    if (title) document.getElementById('book-title').textContent = title;
+    updatePageDisplay();
+    renderPage();
+    if (isAdmin) {
+      broadcast({ type: 'state', page: currentPage, total: totalPages, bookTitle: title });
+    }
+  }).catch(err => {
+    toast('PDF yüklenemedi: ' + err.message);
+  });
+}
+
+function renderPage() {
+  if (!pdfDoc) return;
+  if (currentRenderPage === currentPage) return;
+  currentRenderPage = currentPage;
+
+  pdfDoc.getPage(currentPage).then(page => {
+    const container = document.getElementById('pdf-scroll-container');
+    const fitMode = document.getElementById('fit-mode').value;
+
+    let desiredScale = scale;
+    if (fitMode === 'width') {
+      const vp0 = page.getViewport({ scale: 1 });
+      desiredScale = (container.clientWidth - 32) / vp0.width;
+    } else if (fitMode === 'height') {
+      const vp0 = page.getViewport({ scale: 1 });
+      desiredScale = (container.clientHeight - 32) / vp0.height;
+    }
+
+    const viewport = page.getViewport({ scale: desiredScale });
+    const canvas = document.getElementById('pdf-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+
+    document.getElementById('pdf-canvas-wrap').style.width = viewport.width + 'px';
+    document.getElementById('pdf-canvas-wrap').style.height = viewport.height + 'px';
+
+    if (renderTask) renderTask.cancel();
+    renderTask = page.render({ canvasContext: ctx, viewport });
+    renderTask.promise.then(() => {
+      currentRenderPage = 0; // allow re-render if needed
+    }).catch(() => {});
+  });
+}
+
+function zoom(delta) {
+  scale = Math.min(3, Math.max(0.3, scale + delta));
+  document.getElementById('zoom-val').textContent = Math.round(scale * 100) + '%';
+  document.getElementById('fit-mode').value = 'free';
+  currentRenderPage = 0;
+  renderPage();
+}
+
+function updatePageDisplay() {
+  const txt = `${currentPage} / ${totalPages || '—'}`;
+  document.getElementById('page-display').textContent = txt;
+  document.getElementById('page-display-guest').textContent = txt;
+  const prev = document.getElementById('prev-btn');
+  const next = document.getElementById('next-btn');
+  if (prev) prev.disabled = currentPage <= 1;
+  if (next) next.disabled = currentPage >= totalPages;
+}
+
+function adminGo(dir) {
+  if (!isAdmin || !pdfDoc) return;
+  const np = Math.min(totalPages, Math.max(1, currentPage + dir));
+  if (np === currentPage) return;
+  currentPage = np;
+  currentRenderPage = 0;
+  renderPage();
+  updatePageDisplay();
+  votes.clear();
+  myVoted = false;
+  updateVoteUI();
+  broadcast({ type: 'page_change', page: currentPage, total: totalPages });
+  broadcast({ type: 'vote_reset' });
+}
+
+// ======================================================
+// VOTING
+// ======================================================
+function voteNextPage() {
+  if (myVoted) return;
+  if (!pdfDoc && !totalPages) { toast('Henüz PDF yüklenmedi'); return; }
+  myVoted = true;
+  votes.add(myName);
+  updateVoteUI();
+  broadcast({ type: 'vote', name: myName });
+
+  if (isAdmin) {
+    const needed = Math.ceil((connections.length + 1) / 2);
+    if (votes.size >= needed && currentPage < totalPages) {
+      setTimeout(() => {
+        votes.clear();
+        myVoted = false;
+        updateVoteUI();
+        adminGo(1);
+        broadcast({ type: 'vote_reset' });
+      }, 300);
+    }
+  }
+}
+
+function updateVoteUI() {
+  const total = connections.length + 1;
+  const needed = Math.ceil(total / 2);
+  const count = votes.size;
+  const btn = document.getElementById('vote-btn');
+  const status = document.getElementById('vote-status');
+  const bar = document.getElementById('vote-progress');
+
+  status.textContent = count > 0 ? `${count}/${total}` : '';
+  bar.style.width = total > 0 ? (count / total * 100) + '%' : '0%';
+
+  if (myVoted) btn.classList.add('voted');
+  else btn.classList.remove('voted');
+}
+
+// ======================================================
+// CURSORS
+// ======================================================
+document.getElementById('pdf-canvas-wrap').addEventListener('mousemove', (e) => {
+  const wrap = document.getElementById('pdf-canvas-wrap');
+  const rect = wrap.getBoundingClientRect();
+  const xPct = (e.clientX - rect.left) / rect.width;
+  const yPct = (e.clientY - rect.top) / rect.height;
+  broadcast({ type: 'cursor', name: myName, color: myColor(), x: xPct, y: yPct });
+});
+
+document.getElementById('pdf-canvas-wrap').addEventListener('mouseleave', () => {
+  broadcast({ type: 'cursor', name: myName, color: myColor(), x: -1, y: -1 });
+});
+
+function updateRemoteCursor(name, color, xPct, yPct) {
+  const overlay = document.getElementById('cursor-overlay');
+  let el = document.getElementById('cursor-' + name);
+  if (!el) {
+    el = document.createElement('div');
+    el.className = 'remote-cursor';
+    el.id = 'cursor-' + name;
+    el.innerHTML = `<div class="cursor-dot" style="background:${color}"></div><div class="cursor-label" style="border-color:${color}20">${name}</div>`;
+    overlay.appendChild(el);
+  }
+  if (xPct < 0) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  const wrap = document.getElementById('pdf-canvas-wrap');
+  el.style.left = (xPct * wrap.clientWidth) + 'px';
+  el.style.top = (yPct * wrap.clientHeight) + 'px';
+}
+
+function removeCursor(name) {
+  const el = document.getElementById('cursor-' + name);
+  if (el) el.remove();
+}
+
+// ======================================================
+// CHAT
+// ======================================================
+function sendChatMsg() {
+  const inp = document.getElementById('chat-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+  appendChat(myName, myColor(), text, true);
+  broadcast({ type: 'chat', name: myName, color: myColor(), text });
+}
+
+function appendChat(name, color, text, isMe) {
+  const box = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg' + (isMe ? ' me' : '');
+  div.innerHTML = `<div class="msg-author" style="color:${color}">${escHtml(name)}</div>${escHtml(text)}`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function sysMsg(text) {
+  const box = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg system';
+  div.textContent = text;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ======================================================
+// USERS LIST
+// ======================================================
+function addUserToList(name, color, isAdminUser) {
+  const list = document.getElementById('users-list');
+  if (document.getElementById('u-' + name)) return;
+  const div = document.createElement('div');
+  div.className = 'user-item';
+  div.id = 'u-' + name;
+  const initials = name.slice(0, 2).toUpperCase();
+  div.innerHTML = `
+    <div class="user-avatar" style="background:${color}22;color:${color};border:1px solid ${color}44">${initials}</div>
+    <span class="user-name">${escHtml(name)}</span>
+    ${isAdminUser ? '<span class="user-badge">Admin</span>' : ''}
+    <span class="mic-icon hidden" id="mic-${name}">🎤</span>
+  `;
+  list.appendChild(div);
+}
+
+function removeUserFromList(name) {
+  const el = document.getElementById('u-' + name);
+  if (el) el.remove();
+}
+
+function updateUserMic(name, active) {
+  const el = document.getElementById('mic-' + name);
+  if (el) el.classList.toggle('hidden', !active);
+}
+
+function updatePeerCount() {
+  const n = connections.length + 1;
+  document.getElementById('peer-count').textContent = n + ' kişi';
+  updateVoteUI();
+}
+
+function setConnected(ok) {
+  const dot = document.getElementById('conn-dot');
+  dot.classList.toggle('disconnected', !ok);
+}
+
+// ======================================================
+// VOICE (WebRTC Audio)
+// ======================================================
+async function toggleMic() {
+  const btn = document.getElementById('mic-btn');
+  const bigBtn = document.getElementById('big-mic-btn');
+  const status = document.getElementById('voice-status');
+
+  if (!isMicOn) {
+    try {
+      micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      isMicOn = true;
+      isMuted = false;
+      btn.classList.add('active');
+      bigBtn.classList.add('active');
+      bigBtn.textContent = '🎤';
+      status.textContent = 'Mikrofon açık — konuşabilirsin.';
+      broadcast({ type: 'mic_state', name: myName, active: true });
+
+      // Call all existing peers
+      connections.forEach(conn => {
+        if (conn._meta?.name) {
+          const call = peer.call(conn.peer, micStream);
+          setupAudioCall(call, conn._meta.name);
+          audioConnections[conn.peer] = call;
+        }
+      });
+
+      toast('Mikrofon açıldı');
+    } catch(e) {
+      toast('Mikrofon izni gerekli');
+    }
+  } else {
+    // Toggle mute
+    isMuted = !isMuted;
+    micStream.getAudioTracks().forEach(t => t.enabled = !isMuted);
+    btn.classList.toggle('active', !isMuted);
+    btn.classList.toggle('danger', isMuted);
+    bigBtn.classList.toggle('active', !isMuted);
+    bigBtn.classList.toggle('muted', isMuted);
+    bigBtn.textContent = isMuted ? '🔇' : '🎤';
+    status.textContent = isMuted ? 'Mikrofon kapalı (susturuldu).' : 'Mikrofon açık — konuşabilirsin.';
+    toast(isMuted ? 'Susturuldu' : 'Mikrofon açıldı');
+    broadcast({ type: 'mic_state', name: myName, active: !isMuted });
+  }
+}
+
+function setupAudioCall(call, remoteName) {
+  call.on('stream', (remoteStream) => {
+    const audio = document.createElement('audio');
+    audio.srcObject = remoteStream;
+    audio.autoplay = true;
+    audio.id = 'audio-' + call.peer;
+    document.body.appendChild(audio);
+  });
+  call.on('close', () => {
+    const el = document.getElementById('audio-' + call.peer);
+    if (el) el.remove();
+  });
+}
+
+// ======================================================
+// ROOM UI
+// ======================================================
+function showRoom() {
+  document.getElementById('lobby').style.display = 'none';
+  const room = document.getElementById('room');
+  room.style.display = 'flex';
+
+  document.getElementById('room-badge').textContent = '🔑 ' + roomId;
+  addUserToList(myName, myColor(), isAdmin);
+
+  if (isAdmin) {
+    document.getElementById('admin-page-ctrl').style.display = 'flex';
+    document.getElementById('upload-btn').style.display = 'flex';
+  } else {
+    document.getElementById('page-display-guest').style.display = 'block';
+  }
+
+  sysMsg('Odaya hoş geldin, ' + myName + '!');
+  sysMsg('Oda kodu: ' + roomId + ' — Arkadaşlarına gönder!');
+  setConnected(true);
+}
+
+function copyRoomId() {
+  navigator.clipboard.writeText(roomId).then(() => toast('Oda kodu kopyalandı: ' + roomId));
+}
+
+function toggleSidebar() {
+  sidebarOpen = !sidebarOpen;
+  document.getElementById('sidebar').classList.toggle('collapsed', !sidebarOpen);
+  document.getElementById('sidebar-toggle').classList.toggle('active', sidebarOpen);
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.stab').forEach((b, i) => {
+    const names = ['chat','users','voice'];
+    b.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ======================================================
+// TOAST
+// ======================================================
+function toast(msg) {
+  const area = document.getElementById('toast-area');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  area.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+// ======================================================
+// KEYBOARD
+// ======================================================
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { if (isAdmin) adminGo(1); }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { if (isAdmin) adminGo(-1); }
+  if (e.key === ' ') { e.preventDefault(); voteNextPage(); }
+});
+
+window.addEventListener('resize', () => {
+  if (pdfDoc) { currentRenderPage = 0; renderPage(); }
+});
+</script>
+</body>
+</html>
